@@ -1,0 +1,7 @@
+[project]
+name = "arag"
+version = "0.1.0"
+description = "ARAG - Coming Soon"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
