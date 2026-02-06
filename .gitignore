@@ -55,6 +55,7 @@ poetry.lock
 
 # Data and outputs (DO NOT COMMIT)
 data/
+data_*/
 results/
 outputs/
 logs/

@@ -13,17 +13,47 @@
 
 ---
 
-## 🚧 Work in Progress
+## 🚀 Quick Start
 
-> **Note**: This project is under active development. The following features are planned:
+```bash
+# 1. Install
+git clone https://github.com/Ayanami0730/arag.git && cd arag
+uv sync --extra full                  # or: pip install -e ".[full]"
 
-- [ ] **Baseline Scripts**: Upload compatible scripts for all baseline methods (GraphRAG, HippoRAG2, LinearRAG, etc.)
-- [ ] **Ablation Interfaces**: Complete interfaces for ablation studies (w/o keyword search, w/o semantic search, w/o chunk read)
-- [ ] **Multi-Provider Support**: Native API support for Anthropic Claude and Google Gemini (currently only OpenAI-compatible APIs)
-- [ ] **Additional Benchmarks**: Scripts for HotpotQA, 2WikiMQA, and GraphRAG-Bench evaluation
-- [ ] **Visualization Tools**: Trajectory visualization and analysis tools
+# 2. Download benchmark datasets from HuggingFace
+git clone https://huggingface.co/datasets/Ayanami0730/rag_test data --depth 1
+rm -rf data/.git data/README.md
 
-Contributions and feedback are welcome!
+# 3. Build embedding index
+#    We use Qwen3-Embedding-0.6B in our paper (https://huggingface.co/Qwen/Qwen3-Embedding-0.6B)
+#    You can also use a local path: --model /path/to/Qwen3-Embedding-0.6B
+uv run python scripts/build_index.py \
+    --chunks data/musique/chunks.json \
+    --output data/musique/index \
+    --model Qwen/Qwen3-Embedding-0.6B \
+    --device cuda:0
+
+# 4. Set environment variables
+export ARAG_API_KEY="your-api-key"
+export ARAG_BASE_URL="https://api.openai.com/v1"
+export ARAG_MODEL="gpt-5-mini"
+
+# 5. Run A-RAG agent
+uv run python scripts/batch_runner.py \
+    --config configs/example.yaml \
+    --questions data/musique/questions.json \
+    --output results/musique \
+    --limit 10 --workers 5
+
+# 6. Evaluate results
+uv run python scripts/eval.py \
+    --predictions results/musique/predictions.jsonl \
+    --workers 5
+```
+
+> **Note**: Datasets hosted on [HuggingFace 🤗](https://huggingface.co/datasets/Ayanami0730/rag_test), reformatted from [Zly0523/linear-rag](https://huggingface.co/datasets/Zly0523/linear-rag) and [GraphRAG-Bench](https://huggingface.co/datasets/GraphRAG-Bench/GraphRAG-Bench) into a unified format.
+>
+> Don't have `uv`? Install it: `curl -LsSf https://astral.sh/uv/install.sh | sh`
 
 ---
 
@@ -74,23 +104,6 @@ We identify three key principles that define true agentic autonomy:
 
 ---
 
-## ⚡ 30-Second Quickstart
-
-```bash
-git clone https://github.com/Ayanami0730/arag.git && cd arag
-pip install -e ".[full]"   # or: uv sync --extra full
-
-export ARAG_API_KEY="your-api-key"
-export ARAG_BASE_URL="https://api.openai.com/v1"
-export ARAG_MODEL="gpt-4o-mini"
-
-# Build index & run (see Quick Start section below for full details)
-uv run python scripts/build_index.py --chunks data/chunks.json --output data/index
-uv run python scripts/batch_runner.py --config configs/example.yaml --questions data/questions.json --output results/
-```
-
----
-
 ## 📊 Main Results
 
 Results (%) of baselines and A-RAG on benchmark datasets in terms of **LLM-Evaluation Accuracy (LLM-Acc)** and **Contain-Match Accuracy (Cont-Acc)**. Best results are in **bold**, second best are <u>underlined</u>.
@@ -135,125 +148,31 @@ Results (%) of baselines and A-RAG on benchmark datasets in terms of **LLM-Evalu
 
 ---
 
-## 🛠️ Installation
+## 📁 Project Structure
 
-### Prerequisites
-
-- Python **3.10+**
-- CUDA (optional, for GPU acceleration)
-
-### Install via uv (Recommended)
-
-```bash
-# Install uv (if not installed)
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Clone and install
-git clone https://github.com/Ayanami0730/arag.git
-cd arag
-uv sync --extra full
 ```
-
-### Install via pip
-
-```bash
-git clone https://github.com/Ayanami0730/arag.git
-cd arag
-pip install -e ".[full]"
+arag/
+├── src/arag/              # Main package
+│   ├── core/              # Core modules
+│   │   ├── config.py      # Configuration management
+│   │   ├── context.py     # Agent context & state tracking
+│   │   └── llm.py         # LLM client with cost tracking
+│   ├── agent/             # Agent implementations
+│   │   ├── base.py        # BaseAgent with ReAct loop
+│   │   └── prompts/       # System prompts
+│   └── tools/             # Retrieval tools
+│       ├── keyword_search.py
+│       ├── semantic_search.py
+│       └── read_chunk.py
+├── scripts/               # CLI scripts
+│   ├── build_index.py     # Build embedding index
+│   ├── batch_runner.py    # Batch processing
+│   └── eval.py            # Evaluation
+├── configs/               # Configuration examples
+├── tests/                 # Test suite (gitignored, add your own tests)
+├── .github/               # Issue templates
+└── CITATION.cff           # Citation metadata
 ```
-
----
-
-## 🚀 Quick Start
-
-Get up and running in **3 steps**:
-
-```bash
-# 1. Install
-git clone https://github.com/Ayanami0730/arag.git && cd arag
-uv sync --extra full
-
-# 2. Download data & build index
-python -c "from huggingface_hub import snapshot_download; snapshot_download('Ayanami0730/rag_test', repo_type='dataset', local_dir='data')"
-uv run python scripts/build_index.py --chunks data/musique/chunks.json --output data/musique/index --model sentence-transformers/all-MiniLM-L6-v2
-
-# 3. Run (set your API key first)
-export ARAG_API_KEY="your-api-key" ARAG_BASE_URL="https://api.openai.com/v1" ARAG_MODEL="gpt-5-mini"
-uv run python scripts/batch_runner.py --config configs/example.yaml --questions data/musique/questions.json --output results/musique --limit 10 --workers 5
-```
-
-> **Note**: Datasets are hosted on [HuggingFace](https://huggingface.co/datasets/Ayanami0730/rag_test), reformatted from [Zly0523/linear-rag](https://huggingface.co/datasets/Zly0523/linear-rag) and [GraphRAG-Bench](https://huggingface.co/datasets/GraphRAG-Bench/GraphRAG-Bench) into a unified format.
-
-### Detailed Steps
-
-<details>
-<summary>Click to expand full instructions</summary>
-
-#### 1. Prepare Data
-
-Download all benchmark datasets from HuggingFace:
-
-```bash
-python -c "
-from huggingface_hub import snapshot_download
-snapshot_download(repo_id='Ayanami0730/rag_test', repo_type='dataset', local_dir='data')
-"
-```
-
-This downloads 5 datasets (musique, hotpotqa, 2wikimultihop, medical, novel) into `data/`.
-
-Or prepare your own corpus as a JSON file:
-
-```json
-["0:Document chunk content here...", "1:Another chunk..."]
-```
-
-#### 2. Build Search Index
-
-```bash
-# Using HuggingFace model
-uv run python scripts/build_index.py \
-    --chunks data/musique/chunks.json \
-    --output data/musique/index \
-    --model sentence-transformers/all-MiniLM-L6-v2 \
-    --device cuda:0
-
-# Using local model (e.g., Qwen3-Embedding)
-uv run python scripts/build_index.py \
-    --chunks data/musique/chunks.json \
-    --output data/musique/index \
-    --model /path/to/Qwen3-Embedding-0.6B \
-    --device cuda:0
-```
-
-#### 3. Set Environment Variables
-
-```bash
-export ARAG_API_KEY="your-api-key"
-export ARAG_BASE_URL="https://api.openai.com/v1"
-export ARAG_MODEL="gpt-5-mini"
-```
-
-#### 4. Run Agent
-
-```bash
-uv run python scripts/batch_runner.py \
-    --config configs/example.yaml \
-    --questions data/musique/questions.json \
-    --output results/musique \
-    --limit 100 \
-    --workers 10
-```
-
-#### 5. Evaluate Results
-
-```bash
-uv run python scripts/eval.py \
-    --predictions results/musique/predictions.jsonl \
-    --workers 10
-```
-
-</details>
 
 ---
 
@@ -283,34 +202,6 @@ A-RAG provides three retrieval tools that operate at different granularities:
 
 ---
 
-## 📁 Project Structure
-
-```
-arag/
-├── src/arag/              # Main package
-│   ├── core/              # Core modules
-│   │   ├── config.py      # Configuration management
-│   │   ├── context.py     # Agent context & state tracking
-│   │   └── llm.py         # LLM client with cost tracking
-│   ├── agent/             # Agent implementations
-│   │   ├── base.py        # BaseAgent with ReAct loop
-│   │   └── prompts/       # System prompts
-│   └── tools/             # Retrieval tools
-│       ├── keyword_search.py
-│       ├── semantic_search.py
-│       └── read_chunk.py
-├── scripts/               # CLI scripts
-│   ├── build_index.py     # Build embedding index
-│   ├── batch_runner.py    # Batch processing
-│   └── eval.py            # Evaluation
-├── configs/               # Configuration examples
-├── tests/                 # Test suite (gitignored, add your own tests)
-├── .github/               # Issue templates
-└── CITATION.cff           # Citation metadata
-```
-
----
-
 ## 📚 Benchmarks & Datasets
 
 ### Supported Datasets
@@ -322,18 +213,30 @@ arag/
 | 2WikiMultiHopQA | Multi-hop QA | [GitHub](https://github.com/Alab-NII/2WikiMultiHopQA) |
 | GraphRAG-Bench | Graph RAG evaluation | [GitHub](https://github.com/HKUDS/GraphRAG-Bench) |
 
-### Data Preparation
+### Custom Data Format
 
-1. **Download dataset** and place in `data/<dataset>/`:
+Prepare your own corpus as a JSON file:
 
-```bash
-mkdir -p data/musique
-# Place chunks.json and questions.json in the directory
+```json
+["0:Document chunk content here...", "1:Another chunk..."]
 ```
 
-2. **Build embedding index**:
+### Full Evaluation Example
+
+<details>
+<summary>Click to expand full evaluation instructions</summary>
+
+#### 1. Build Index
 
 ```bash
+# Using HuggingFace model (auto-download)
+uv run python scripts/build_index.py \
+    --chunks data/musique/chunks.json \
+    --output data/musique/index \
+    --model Qwen/Qwen3-Embedding-0.6B \
+    --device cuda:0
+
+# Or using a local model path
 uv run python scripts/build_index.py \
     --chunks data/musique/chunks.json \
     --output data/musique/index \
@@ -341,7 +244,9 @@ uv run python scripts/build_index.py \
     --device cuda:0
 ```
 
-3. **Create config file** `configs/test_musique.yaml`:
+#### 2. Create Config File
+
+Create `configs/test_musique.yaml`:
 
 ```yaml
 llm:
@@ -350,7 +255,7 @@ llm:
   reasoning_effort: "medium"
 
 embedding:
-  model: "/path/to/Qwen3-Embedding-0.6B"
+  model: "Qwen/Qwen3-Embedding-0.6B"  # or local path
   device: "cuda:0"
   batch_size: 16
 
@@ -364,21 +269,19 @@ data:
   index_dir: "data/musique/index"
 ```
 
-4. **Run evaluation**:
+#### 3. Run Full Benchmark
 
 ```bash
-# Set environment
 export ARAG_API_KEY="your-api-key"
 export ARAG_BASE_URL="https://api.openai.com/v1"
 export ARAG_MODEL="gpt-5-mini"
 export CUDA_VISIBLE_DEVICES=0
 
-# Run batch processing
+# Run all questions
 uv run python scripts/batch_runner.py \
     --config configs/test_musique.yaml \
     --questions data/musique/questions.json \
     --output results/musique \
-    --limit 100 \
     --workers 10
 
 # Evaluate
@@ -386,6 +289,8 @@ uv run python scripts/eval.py \
     --predictions results/musique/predictions.jsonl \
     --workers 10
 ```
+
+</details>
 
 ---
 
@@ -410,7 +315,7 @@ tools.register(KeywordSearchTool(chunks_file="data/chunks.json"))
 tools.register(SemanticSearchTool(
     chunks_file="data/chunks.json",
     index_dir="data/index",
-    embedding_model="sentence-transformers/all-MiniLM-L6-v2"
+    embedding_model="Qwen/Qwen3-Embedding-0.6B"
 ))
 tools.register(ReadChunkTool(chunks_file="data/chunks.json"))
 
@@ -428,6 +333,18 @@ print(f"Answer: {result['answer']}")
 print(f"Cost: ${result['total_cost']:.6f}")
 print(f"Loops: {result['loops']}")
 ```
+
+---
+
+## 🗺️ Roadmap
+
+- [ ] **Baseline Scripts**: Compatible scripts for all baseline methods (GraphRAG, HippoRAG2, LinearRAG, etc.)
+- [ ] **Ablation Interfaces**: Complete interfaces for ablation studies (w/o keyword search, w/o semantic search, w/o chunk read)
+- [ ] **Multi-Provider Support**: Native API support for Anthropic Claude and Google Gemini (currently only OpenAI-compatible APIs)
+- [ ] **Additional Benchmarks**: Scripts for HotpotQA, 2WikiMQA, and GraphRAG-Bench evaluation
+- [ ] **Visualization Tools**: Trajectory visualization and analysis tools
+
+Contributions and feedback are welcome!
 
 ---
 

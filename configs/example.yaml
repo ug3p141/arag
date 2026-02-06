@@ -12,9 +12,10 @@ llm:
   reasoning_effort: "medium"  # For reasoning models (o1, etc.)
 
 embedding:
-  # Local model path or HuggingFace model name
-  model: "sentence-transformers/all-MiniLM-L6-v2"
-  # model: "/path/to/local/embedding-model"
+  # HuggingFace model name or local model path
+  # We use Qwen3-Embedding-0.6B in our paper
+  model: "Qwen/Qwen3-Embedding-0.6B"
+  # model: "/path/to/local/Qwen3-Embedding-0.6B"
   device: "cuda:0"  # or "cpu"
   batch_size: 16
 
