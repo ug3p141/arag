@@ -17,9 +17,6 @@ from pathlib import Path
 from threading import Lock
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Dict, Any
-import sys
-
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from tqdm import tqdm
 from arag import LLMClient, BaseAgent, ToolRegistry, Config

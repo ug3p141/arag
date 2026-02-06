@@ -4,6 +4,7 @@
 
 <a href="https://arxiv.org/abs/2602.03442"><img src="https://img.shields.io/badge/arXiv-2602.03442-b31b1b.svg" alt="arXiv"></a>
 <a href="https://agentresearchlab.org/agents/a-rag/index.html#home"><img src="https://img.shields.io/badge/Website-A--RAG-blue" alt="Website"></a>
+<a href="https://huggingface.co/datasets/Ayanami0730/rag_test"><img src="https://img.shields.io/badge/🤗_Datasets-A--RAG-yellow" alt="HuggingFace"></a>
 <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
 
 **If you find our project helpful, please give us a star ⭐ on GitHub!**
@@ -70,6 +71,23 @@ We identify three key principles that define true agentic autonomy:
 - 🤖 **True Agentic Autonomy**: Autonomous strategy, iterative execution, and interleaved tool use
 - 📈 **Test-Time Scaling**: Performance improves with increased compute resources
 - ⚡ **Context Efficient**: Achieves superior accuracy with comparable or fewer retrieved tokens
+
+---
+
+## ⚡ 30-Second Quickstart
+
+```bash
+git clone https://github.com/Ayanami0730/arag.git && cd arag
+pip install -e ".[full]"   # or: uv sync --extra full
+
+export ARAG_API_KEY="your-api-key"
+export ARAG_BASE_URL="https://api.openai.com/v1"
+export ARAG_MODEL="gpt-4o-mini"
+
+# Build index & run (see Quick Start section below for full details)
+uv run python scripts/build_index.py --chunks data/chunks.json --output data/index
+uv run python scripts/batch_runner.py --config configs/example.yaml --questions data/questions.json --output results/
+```
 
 ---
 
@@ -148,70 +166,94 @@ pip install -e ".[full]"
 
 ## 🚀 Quick Start
 
-### 1. Prepare Data
+Get up and running in **3 steps**:
 
-Your document corpus should be a JSON file with chunks:
+```bash
+# 1. Install
+git clone https://github.com/Ayanami0730/arag.git && cd arag
+uv sync --extra full
 
-```json
-[
-  "0:Document chunk content here...",
-  "1:Another document chunk..."
-]
+# 2. Download data & build index
+python -c "from huggingface_hub import snapshot_download; snapshot_download('Ayanami0730/rag_test', repo_type='dataset', local_dir='data')"
+uv run python scripts/build_index.py --chunks data/musique/chunks.json --output data/musique/index --model sentence-transformers/all-MiniLM-L6-v2
+
+# 3. Run (set your API key first)
+export ARAG_API_KEY="your-api-key" ARAG_BASE_URL="https://api.openai.com/v1" ARAG_MODEL="gpt-5-mini"
+uv run python scripts/batch_runner.py --config configs/example.yaml --questions data/musique/questions.json --output results/musique --limit 10 --workers 5
 ```
 
-Or dict format:
+> **Note**: Datasets are hosted on [HuggingFace](https://huggingface.co/datasets/Ayanami0730/rag_test), reformatted from [Zly0523/linear-rag](https://huggingface.co/datasets/Zly0523/linear-rag) and [GraphRAG-Bench](https://huggingface.co/datasets/GraphRAG-Bench/GraphRAG-Bench) into a unified format.
 
-```json
-[
-  {"id": "0", "text": "Document chunk content here..."},
-  {"id": "1", "text": "Another document chunk..."}
-]
+### Detailed Steps
+
+<details>
+<summary>Click to expand full instructions</summary>
+
+#### 1. Prepare Data
+
+Download all benchmark datasets from HuggingFace:
+
+```bash
+python -c "
+from huggingface_hub import snapshot_download
+snapshot_download(repo_id='Ayanami0730/rag_test', repo_type='dataset', local_dir='data')
+"
 ```
 
-### 2. Build Search Index
+This downloads 5 datasets (musique, hotpotqa, 2wikimultihop, medical, novel) into `data/`.
+
+Or prepare your own corpus as a JSON file:
+
+```json
+["0:Document chunk content here...", "1:Another chunk..."]
+```
+
+#### 2. Build Search Index
 
 ```bash
 # Using HuggingFace model
 uv run python scripts/build_index.py \
-    --chunks data/chunks.json \
-    --output data/index \
+    --chunks data/musique/chunks.json \
+    --output data/musique/index \
     --model sentence-transformers/all-MiniLM-L6-v2 \
     --device cuda:0
 
 # Using local model (e.g., Qwen3-Embedding)
 uv run python scripts/build_index.py \
-    --chunks data/chunks.json \
-    --output data/index \
+    --chunks data/musique/chunks.json \
+    --output data/musique/index \
     --model /path/to/Qwen3-Embedding-0.6B \
     --device cuda:0
 ```
 
-### 3. Set Environment Variables
+#### 3. Set Environment Variables
 
 ```bash
 export ARAG_API_KEY="your-api-key"
 export ARAG_BASE_URL="https://api.openai.com/v1"
-export ARAG_MODEL="gpt-4o-mini"
+export ARAG_MODEL="gpt-5-mini"
 ```
 
-### 4. Run Agent
+#### 4. Run Agent
 
 ```bash
 uv run python scripts/batch_runner.py \
     --config configs/example.yaml \
-    --questions data/questions.json \
-    --output results/ \
+    --questions data/musique/questions.json \
+    --output results/musique \
     --limit 100 \
     --workers 10
 ```
 
-### 5. Evaluate Results
+#### 5. Evaluate Results
 
 ```bash
 uv run python scripts/eval.py \
-    --predictions results/predictions.jsonl \
+    --predictions results/musique/predictions.jsonl \
     --workers 10
 ```
+
+</details>
 
 ---
 
@@ -262,7 +304,9 @@ arag/
 │   ├── batch_runner.py    # Batch processing
 │   └── eval.py            # Evaluation
 ├── configs/               # Configuration examples
-└── tests/                 # Test suite
+├── tests/                 # Test suite (gitignored, add your own tests)
+├── .github/               # Issue templates
+└── CITATION.cff           # Citation metadata
 ```
 
 ---

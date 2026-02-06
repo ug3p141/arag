@@ -14,12 +14,9 @@ import re
 import string
 import argparse
 import logging
-import sys
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
-
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from arag import LLMClient, Config
 
