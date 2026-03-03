@@ -1,0 +1,29 @@
+llm:
+  model: "vertex_ai/claude-sonnet-4-5-20250929"
+  temperature: 0.0
+  max_tokens: 16384
+  vertex_project: "hyprotwin"
+  vertex_location: "europe-west4"
+  vertex_credentials: "vertex_credentials/hyprotwin-58e6370ca989.json"
+
+agent:
+  max_loops: 15
+  max_token_budget: 200000
+  verbose: false
+  system_prompt: "src/arag/agent/prompts/hyprotwin.txt"
+
+data:
+  chunks_file: "data/wsv/chunks.json"
+  document_registry: "data/wsv/document_registry.json"
+  questions_file: "data/wsv/questions.json"
+
+qdrant:
+  host: "localhost"
+  port: 6333
+  collection: "hyprotwin"
+
+embedding:
+  model: "text-embedding-ada-002"
+
+output:
+  results_dir: "results/hyprotwin/"
