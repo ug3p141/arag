@@ -36,6 +36,9 @@ env/
 .pydevproject
 .settings/
 
+# Claude Code
+.claude/
+
 # Jupyter
 .ipynb_checkpoints/
 
@@ -49,7 +52,6 @@ htmlcov/
 .mypy_cache/
 
 # Package managers
-uv.lock
 Pipfile.lock
 poetry.lock
 
@@ -79,6 +81,7 @@ logs/
 credentials.json
 secrets.yaml
 secrets.json
+vertex_credentials/
 
 # Test configurations with local paths
 configs/test_*.yaml
