@@ -10,7 +10,6 @@ Usage:
 import argparse
 import json
 from collections import defaultdict
-from pathlib import Path
 
 
 def check_document_identification(trajectory: list, expected_docs: str) -> bool:

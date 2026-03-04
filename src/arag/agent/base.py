@@ -1,7 +1,7 @@
 """Base agent implementation for ARAG."""
 
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import tiktoken
 

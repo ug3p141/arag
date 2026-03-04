@@ -10,11 +10,10 @@ Usage:
 import argparse
 import json
 import logging
-import os
 from pathlib import Path
 from threading import Lock
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from tqdm import tqdm
 from arag import LLMClient, BaseAgent, ToolRegistry, Config

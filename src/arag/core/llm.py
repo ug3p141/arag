@@ -1,7 +1,7 @@
 """LLM client for ARAG — unified interface via litellm."""
 
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import litellm
 import tiktoken
